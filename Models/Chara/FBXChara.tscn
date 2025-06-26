@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://bjrxtv6opfy62"]
+
+[ext_resource type="Script" path="res://Models/Chara/FbxChara.cs" id="1_fsp06"]
+[ext_resource type="PackedScene" uid="uid://b8pn7cbwob7l3" path="res://Models/Chara/TestCharaAnims.fbx" id="1_pqbfg"]
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_fsp06")
+RotationSpeed = 1
+
+[node name="TestCharaAnims" parent="." instance=ExtResource("1_pqbfg")]
+
+[node name="CamRig" type="Node3D" parent="."]
+transform = Transform3D(0.995668, 0, 0, 0, 0.995668, 0, 0, 0, 0.995668, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CamRig"]
+transform = Transform3D(-1, -2.26267e-08, 8.44439e-08, 0, 0.965926, 0.258819, -8.74228e-08, 0.258819, -0.965926, 0, 2.05, -2.656)
+current = true

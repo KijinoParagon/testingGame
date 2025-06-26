@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://beu4d2k2ogwi6"]
+
+[ext_resource type="Script" path="res://Models/Enemies/GorillaEnemy.cs" id="1_j7dwd"]
+[ext_resource type="PackedScene" uid="uid://d4nmek5ej44t8" path="res://Models/Enemies/gorillaModel.tscn" id="2_etjan"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_oumfu"]
+height = 2.2455
+
+[node name="GorillaEnemy" type="Node3D"]
+script = ExtResource("1_j7dwd")
+Npc = true
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+
+[node name="RayCast" type="RayCast3D" parent="CharacterBody3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 0.844347, -0.535797, 0, 0.535797, 0.844347, 0, 0.952093, 0.338725)
+shape = SubResource("CapsuleShape3D_oumfu")
+
+[node name="Model" parent="CharacterBody3D" instance=ExtResource("2_etjan")]

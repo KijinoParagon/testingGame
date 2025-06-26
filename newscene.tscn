@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://c7eado6yi4jy5"]
+
+[ext_resource type="PackedScene" uid="uid://cyq54icf8sfip" path="res://Models/Maps/map1.blend" id="1_ya8ho"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="map1" parent="." instance=ExtResource("1_ya8ho")]
+
+[node name="OmniLight3D" type="OmniLight3D" parent="map1"]
+transform = Transform3D(0.99772, 0, -0.0674929, 0, 1, 0, 0.0674929, 0, 0.99772, 0, 4.00633, 14.3634)
+light_energy = 9.14
+omni_range = 35.867
+
+[node name="Camera3D" type="Camera3D" parent="map1/OmniLight3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 6.535)

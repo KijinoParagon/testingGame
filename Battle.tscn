@@ -1,0 +1,45 @@
+[gd_scene load_steps=5 format=3 uid="uid://b4oltbh012i2t"]
+
+[ext_resource type="PackedScene" uid="uid://cyq54icf8sfip" path="res://Models/Maps/map1.blend" id="1_b1bfn"]
+[ext_resource type="PackedScene" uid="uid://bjrxtv6opfy62" path="res://Models/Chara/FBXChara.tscn" id="1_y1mwj"]
+[ext_resource type="PackedScene" uid="uid://beu4d2k2ogwi6" path="res://Models/Enemies/GorillaEnemy.tscn" id="3_6naba"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2tieh"]
+size = Vector3(118.556, 1, 151.956)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="FBX" parent="." instance=ExtResource("1_y1mwj")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.343322, 0, 0)
+
+[node name="Player" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+
+[node name="map1" parent="." instance=ExtResource("1_b1bfn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+
+[node name="MapStaticBody" type="StaticBody3D" parent="map1"]
+
+[node name="MapCollision" type="CollisionShape3D" parent="map1/MapStaticBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.2942, -0.5, 35.3166)
+shape = SubResource("BoxShape3D_2tieh")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.23464, 5.41333)
+light_color = Color(0.772295, 0.167037, 0.73242, 1)
+light_energy = 8.83
+shadow_enabled = true
+shadow_bias = 0.175
+shadow_blur = 10.0
+omni_range = 68.276
+
+[node name="GorillaEnemy" parent="." instance=ExtResource("3_6naba")]
+transform = Transform3D(-0.998407, 0, -0.0564139, 0, 1, 0, 0.0564139, 0, -0.998407, -0.12537, 3.02822, 8.24778)
+Npc = false
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.08862, -7.12553)
+light_color = Color(0.632186, 0.618929, 0.610099, 1)
+light_energy = 4.185
+shadow_enabled = true
+omni_range = 68.276
