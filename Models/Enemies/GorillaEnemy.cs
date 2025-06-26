@@ -107,7 +107,6 @@ public partial class GorillaEnemy : Node3D
 				//position.X -= (float)(strafeSpeed * delta * Speed);
 				break;
 		}
-
 		velocity.Y = -(float)((float)grav * delta);
 		charBody.Velocity = velocity;
 		charBody.MoveAndCollide(velocity);
