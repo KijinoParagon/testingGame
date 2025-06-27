@@ -1,122 +1,181 @@
 using Godot;
 using System;
+using Customs;
+using System.Reflection;
 
-public partial class NewGorilla : Node3D
+public partial class NewGorilla : CharacterBody3D
 {
-    /// <summary>
+	/// <summary>
 	/// Action state determines what the character can do.
 	/// </summary>
-    private enum ActionStates
-    {
-        Grounded,
-        Midair,
-        Climbing,
-        Staggered,
-        Prone,
-        Stunned
-    }
-    private ActionStates actionState;
-    /// <summary>
-    /// Stores the animation data for the character.
-    /// </summary>
-    private enum Animations
-    {
-        Idle,
-        WalkF,
-        StrafeL,
-        StrafeR,
-        JumpBackStart,
-        JumpBackMid,
-        JumpBackEnd,
-        AtkHigh1,
-        AtkLowSweep,
-        AtkOverhead,
-        AtkToss
-    }
-    private string AnimPrefix = "rig_002|";
-
-    private FbxChara player;
-
-    public void setPlayer(FbxChara p) {
-        player = p;
-    }
-    public override void _Ready()
-    {
-        actionState = ActionStates.Midair;
-    }
-
-    public override void _Process(double delta)
-    {
-        if (player != null)
-        {
-            GD.Print(player.Position);
-        }
-        //Handle input
-            HandleInput();
-        //Handle signals
-        //Handle Physics
-        //      Should account for switching states depending on inputs
-    }
-
-    private void HandleInput()
-    {
-        if (actionState == ActionStates.Grounded)
-        {
-            if (Input.IsActionPressed("GWalkForward"))
-            {
-                //Handle walk. Walk if walk is pressed, regardless of start/stop.
-                //You would want to mess with velocity here.
-            }
-            if (Input.IsActionJustPressed("GBackHop"))
-            {
-                //Have them jump. Does not trigger if they hold, only if they press.
-            }
-        }
-        /*if (Input.IsActionJustPressed("GStrafeL"))
-        {
-            state = States.StrafeL;
-            anims.Play(AnimPrefix + state.ToString(), 0.2, (float)Speed);
-        }
-
-		if (Input.IsActionJustPressed("GStrafeR"))
+	private enum ActionStates
+	{
+		Grounded,
+		GStrafeL,
+		GStrafeR,
+		Idle,
+		Midair,
+		Climbing,
+		Staggered,
+		Prone,
+		Stunned
+	}
+	private ActionStates actionState;
+	private bool AnimationLocked = false;
+	private struct ActionBuffer
+	{
+		public ActionStates? bufferedAction;
+		public double queueTimer;
+		public ActionBuffer()
 		{
-			state = States.StrafeR;
-			anims.Play(AnimPrefix + state.ToString(), 0.2, (float)Speed);
+			this.bufferedAction = null;
+			this.queueTimer = 0;
+		}
+	}
+	private ActionBuffer actionBuffer = new ActionBuffer();
+	/// <summary>
+	/// Stores the animation data for the character.
+	/// </summary>
+	private enum Animations
+	{
+		Idle,
+		WalkF,
+		StrafeL,
+		StrafeR,
+		JumpBackStart,
+		JumpBackMid,
+		JumpBackEnd,
+		AtkHigh1,
+		AtkLowSweep,
+		AtkOverhead,
+		AtkToss
+	}
+	private string AnimPrefix = "rig_002|";
+	private AnimationPlayer anims;
+
+	private FbxChara player;
+	private Vector3 momentum;
+	private Vector3 movement;
+
+	[Export(PropertyHint.Range, "0,10,0.1")]
+	public double MaxRotationSpeed = 5;
+	[Export(PropertyHint.Range, "-10,10,0.1")]
+	public float movementSpeed = 5;
+	[Export(PropertyHint.Range, "0,5,0.1")]
+	public double ActionBufferTime = 1;
+
+	public void setPlayer(FbxChara p)
+	{
+		player = p;
+	}
+	public override void _Ready()
+	{
+		actionState = ActionStates.Midair;
+		momentum = new Vector3(0, -1.5f, 0);
+		anims = (AnimationPlayer)GetNode("Model/AnimationPlayer");
+		AnimationMixer.AnimationFinishedEventHandler AnimEndEvent = new AnimationMixer.AnimationFinishedEventHandler((Godot.StringName name) => { actionState = actionBuffer.bufferedAction ?? ActionStates.Idle; actionBuffer.bufferedAction = null; });
+		anims.AnimationFinished += AnimEndEvent;
+	}
+
+	public override void _Process(double delta)
+	{
+		movement = new Vector3(0, 0, 0);
+		//Handle input
+		HandleInput(delta);
+		//Handle signals
+		//Handle Physics
+		//      Should account for switching states depending on inputs
+		if (actionState == ActionStates.GStrafeL)
+		{
+			movement.X += movementSpeed * (float) delta * 100;
+		}
+		if (actionState == ActionStates.GStrafeR)
+		{
+			movement.X -= movementSpeed * (float) delta * 100;
+		}
+		movement = movement.Rotated(new Vector3(0, 1, 0), Rotation.Y);
+		Velocity = momentum + movement * new Vector3(movementSpeed, movementSpeed, movementSpeed);
+		this.MoveAndSlide();
+		for (int i = 0; i < this.GetSlideCollisionCount(); i++)
+		{
+			if (((StaticBody3D)this.GetSlideCollision(i).GetCollider()).GetCollisionLayerValue(1))
+			{
+				BufferAction(ActionStates.Idle);
+			}
 		}
 
-		if (Input.IsActionJustReleased("GStrafeL"))
+		//Face the character if you can
+		if (actionState != ActionStates.Staggered && actionState != ActionStates.Stunned && actionState != ActionStates.Prone)
 		{
-			state = States.Idle;
-			anims.Play(AnimPrefix + state.ToString(), 0.2, (float)Speed);
+			this.RotateY((float)CustAng.GetShortestAngle(this, player, MaxRotationSpeed, delta));
+		}
+		GD.Print(actionState);
+	}
+	private void HandleInput(double delta)
+	{
+		if (actionBuffer.bufferedAction != null)
+		{
+			actionBuffer.queueTimer -= delta;
+			if (actionBuffer.queueTimer <= 0)
+			{
+				actionBuffer.bufferedAction = null;
+			}
 		}
 
-		if (Input.IsActionJustReleased("GStrafeR"))
+		if (Input.IsActionPressed("GStrafeL"))
 		{
-			state = States.Idle;
-			anims.Play(AnimPrefix + state.ToString(), 0.2, (float)Speed);
+			BufferAction(ActionStates.GStrafeL);
+		}
+		if (Input.IsActionPressed("GStrafeR"))
+		{
+			BufferAction(ActionStates.GStrafeR);
 		}
 
-		if (Input.IsActionJustPressed("GWalk"))
+		if (actionState == ActionStates.Midair)
 		{
-			state = States.WalkF;
-			anims.Play(AnimPrefix + state.ToString(), 0.2, (float)Speed);
+			if (actionBuffer.bufferedAction == ActionStates.Idle)
+			{
+				actionState = ActionStates.Idle;
+				actionBuffer.bufferedAction = null;
+				anims.Play(AnimPrefix + Animations.Idle);
+			}
 		}
-		if (Input.IsActionJustReleased("GWalk"))
+
+		if (actionState == ActionStates.Idle)
 		{
-			state = States.Idle;
-			anims.Play(AnimPrefix + state.ToString(), 0.2, (float)Speed);
+			if (actionBuffer.bufferedAction == ActionStates.GStrafeL)
+			{
+				actionState = ActionStates.GStrafeL;
+				anims.Play(AnimPrefix + Animations.StrafeL, -1, movementSpeed);
+				actionBuffer.bufferedAction = null;
+				return;
+			}
+			if (actionBuffer.bufferedAction == ActionStates.GStrafeR)
+			{
+				actionState = ActionStates.GStrafeR;
+				anims.Play(AnimPrefix + Animations.StrafeR, -1, movementSpeed);
+				actionBuffer.bufferedAction = null;
+				return;
+			}
+			if (Input.IsActionPressed("GWalk"))
+			{
+				//Handle walk. Walk if walk is pressed, regardless of start/stop.
+				//You would want to mess with velocity here.
+				movement.Z -= 100 * movementSpeed * (float) delta;
+				anims.Play(AnimPrefix + Animations.WalkF);
+			}
+			if (Input.IsActionPressed("GWalkBack"))
+			{
+				//Handle walk. Walk if walk is pressed, regardless of start/stop.
+				//You would want to mess with velocity here.
+				movement.Z += 100 * movementSpeed * (float) delta;
+				anims.Play(AnimPrefix + Animations.WalkF);
+			}
 		}
-		if (Input.IsActionJustPressed("GBackHop"))
-		{
-			state = States.JumpBackStart;
-			currentJumpTime = 0;
-			velocity.Y += (float)jumpAcceleration;
-			anims.Play(AnimPrefix + state.ToString(), 0.2, (float)Speed);
-		}
-		if (Input.IsActionJustReleased("GBackHop") && state == States.JumpBackStart)
-		{
-			state = States.JumpBackMid;
-			anims.Play(AnimPrefix + state.ToString(), 0.2, (float)Speed);
-		}*/
-    }
+	}
+	private void BufferAction(ActionStates action)
+	{
+		actionBuffer.bufferedAction = action;
+		actionBuffer.queueTimer = ActionBufferTime;
+	}
 }
