@@ -32,7 +32,7 @@ omni_range = 68.276
 
 [node name="GorillaEnemy" parent="." instance=ExtResource("3_6naba")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.33216, 4.82955)
-MaxRotationSpeed = 1.0
+MaxRotationSpeed = 2.0
 movementSpeed = 2.0
 
 [node name="OmniLight3D2" type="OmniLight3D" parent="."]

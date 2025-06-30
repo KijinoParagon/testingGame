@@ -22,6 +22,9 @@ public partial class NewGorilla : CharacterBody3D
 	}
 	private ActionStates actionState;
 	private bool AnimationLocked = false;
+	/// <summary>
+	/// Struct for buffering actions.
+	/// </summary>
 	private struct ActionBuffer
 	{
 		public ActionStates? bufferedAction;
@@ -107,7 +110,7 @@ public partial class NewGorilla : CharacterBody3D
 		//Face the character if you can
 		if (actionState != ActionStates.Staggered && actionState != ActionStates.Stunned && actionState != ActionStates.Prone)
 		{
-			this.RotateY((float)CustAng.GetShortestAngle(this, player, MaxRotationSpeed, delta));
+			//this.RotateY((float)CustAng.GetShortestAngle(this, player, MaxRotationSpeed, delta));
 		}
 		GD.Print(actionState);
 	}
@@ -150,29 +153,36 @@ public partial class NewGorilla : CharacterBody3D
 				actionBuffer.bufferedAction = null;
 				return;
 			}
-			if (actionBuffer.bufferedAction == ActionStates.GStrafeR)
+			else if (actionBuffer.bufferedAction == ActionStates.GStrafeR)
 			{
 				actionState = ActionStates.GStrafeR;
 				anims.Play(AnimPrefix + Animations.StrafeR, -1, movementSpeed);
 				actionBuffer.bufferedAction = null;
 				return;
 			}
-			if (Input.IsActionPressed("GWalk"))
+			else if (Input.IsActionPressed("GWalk"))
 			{
 				//Handle walk. Walk if walk is pressed, regardless of start/stop.
 				//You would want to mess with velocity here.
-				movement.Z -= 100 * movementSpeed * (float) delta;
+				movement.Z -= 100 * movementSpeed * (float)delta;
 				anims.Play(AnimPrefix + Animations.WalkF);
 			}
-			if (Input.IsActionPressed("GWalkBack"))
+			else if (Input.IsActionPressed("GWalkBack"))
 			{
 				//Handle walk. Walk if walk is pressed, regardless of start/stop.
 				//You would want to mess with velocity here.
-				movement.Z += 100 * movementSpeed * (float) delta;
+				movement.Z += 100 * movementSpeed * (float)delta;
 				anims.Play(AnimPrefix + Animations.WalkF);
+			}
+			else
+			{
+				anims.Play(AnimPrefix + Animations.Idle, 0.2);
 			}
 		}
 	}
+	/// <summary>
+	/// Buffers an action for the character.
+	/// </summary>
 	private void BufferAction(ActionStates action)
 	{
 		actionBuffer.bufferedAction = action;

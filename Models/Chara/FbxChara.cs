@@ -12,7 +12,7 @@ public partial class FbxChara : Node3D
 		Idle,
 		Guard
 	}
-
+	private bool CamRotate = true;
 	private States? stateBuffer;
 	private float atkSpeed = 5f;
 	private float AnimationTimer = 0f;
@@ -146,15 +146,15 @@ public partial class FbxChara : Node3D
 			this.state = stateBuffer ?? States.Idle;
 			stateBuffer = null;
 		}
-		Vector3 i = new Vector3( (float) (( Math.Sin(rig.Rotation.Y) * velocity.Z) + (Math.Cos(rig.Rotation.Y) * velocity.X)) , 
-		 	velocity.Y, 
-		 	(float) ((Math.Cos(rig.Rotation.Y) * velocity.Z) + (Math.Sin(rig.Rotation.Y) * velocity.X * -1)));
+		Vector3 i = new Vector3((float)((Math.Sin(rig.Rotation.Y) * velocity.Z) + (Math.Cos(rig.Rotation.Y) * velocity.X)),
+			 velocity.Y,
+			 (float)((Math.Cos(rig.Rotation.Y) * velocity.Z) + (Math.Sin(rig.Rotation.Y) * velocity.X * -1)));
 		this.Position += i;
 	}
-	
+
 	public override void _Input(InputEvent @event)
 	{
-		if (@event is InputEventMouseMotion mouseMotion)
+		if (CamRotate && @event is InputEventMouseMotion mouseMotion)
 		{
 			mesh.RotateY(-0.01f * mouseMotion.Relative.X * RotationSpeed);
 			rig.RotateY(-0.01f * mouseMotion.Relative.X * RotationSpeed);
@@ -173,22 +173,20 @@ public partial class FbxChara : Node3D
 				rig.RotateObjectLocal(new Vector3(1, 0, 0), (-0.01f * mouseMotion.Relative.Y * RotationSpeed));
 			}*/
 		}
-		
-		if (@event.IsActionPressed("escape"))
-		{
-			ToggleMouseMode();
-		}
+
 	}
 
-	private void ToggleMouseMode()
+	public void ToggleCameraMode()
 	{
-		if (Input.MouseMode == Input.MouseModeEnum.Visible)
+		if (CamRotate)
 		{
-			Input.MouseMode = Input.MouseModeEnum.Captured;
+			CamRotate = false;
+			Input.MouseMode = Input.MouseModeEnum.Visible;
 		}
 		else
 		{
-			Input.MouseMode = Input.MouseModeEnum.Visible;
+			CamRotate = true;
+			Input.MouseMode = Input.MouseModeEnum.Captured;
 		}
 	}
 }

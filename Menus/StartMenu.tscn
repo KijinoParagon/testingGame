@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3 uid="uid://bf7aknojvfapj"]
+
+[ext_resource type="Script" path="res://Menus/StartButton.cs" id="1_0c21m"]
+[ext_resource type="Script" path="res://Menus/StartMenu.cs" id="1_aq4fa"]
+[ext_resource type="Texture2D" uid="uid://c3ylfur4u5h60" path="res://Resources/welcometoKoeAhu.png" id="1_mm4xi"]
+[ext_resource type="Texture2D" uid="uid://dbtvj1jahqtgb" path="res://Resources/Logo.png" id="3_at86y"]
+
+[node name="StartMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_aq4fa")
+
+[node name="WelcometoKoeAhu" type="Sprite2D" parent="."]
+position = Vector2(582, 334)
+scale = Vector2(0.612268, 0.612268)
+texture = ExtResource("1_mm4xi")
+
+[node name="StartButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 469.0
+offset_top = 59.0
+offset_right = 677.0
+offset_bottom = 171.0
+text = "Start Game"
+script = ExtResource("1_0c21m")
+
+[node name="Options" type="Button" parent="."]
+layout_mode = 0
+offset_left = 770.0
+offset_top = 55.0
+offset_right = 980.0
+offset_bottom = 169.0
+text = "Options"
+
+[node name="Logo" type="Sprite2D" parent="."]
+position = Vector2(115, 105)
+scale = Vector2(0.1355, 0.1355)
+texture = ExtResource("3_at86y")
