@@ -110,7 +110,7 @@ public partial class NewGorilla : CharacterBody3D
 		//Face the character if you can
 		if (actionState != ActionStates.Staggered && actionState != ActionStates.Stunned && actionState != ActionStates.Prone)
 		{
-			//this.RotateY((float)CustAng.GetShortestAngle(this, player, MaxRotationSpeed, delta));
+			this.RotateY((float)CustAng.GetShortestAngle(this, player, MaxRotationSpeed, delta));
 		}
 		GD.Print(actionState);
 	}
