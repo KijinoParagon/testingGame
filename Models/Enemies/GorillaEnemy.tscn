@@ -8,6 +8,7 @@ height = 2.2455
 
 [node name="CharacterBody3D" type="CharacterBody3D"]
 script = ExtResource("1_kq2qc")
+jumpVelocity = 19.3
 
 [node name="RayCast" type="RayCast3D" parent="."]
 

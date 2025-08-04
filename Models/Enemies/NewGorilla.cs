@@ -3,13 +3,11 @@ using System;
 using Customs;
 using System.Reflection;
 
-public partial class NewGorilla : CharacterBody3D
-{
+public partial class NewGorilla : CharacterBody3D {
 	/// <summary>
 	/// Action state determines what the character can do.
 	/// </summary>
-	private enum ActionStates
-	{
+	private enum ActionStates {
 		Grounded,
 		GStrafeL,
 		GStrafeR,
@@ -18,19 +16,18 @@ public partial class NewGorilla : CharacterBody3D
 		Climbing,
 		Staggered,
 		Prone,
-		Stunned
+		Stunned,
+		JumpBack
 	}
 	private ActionStates actionState;
-	private bool AnimationLocked = false;
+	private bool animationLocked = false;
 	/// <summary>
 	/// Struct for buffering actions.
 	/// </summary>
-	private struct ActionBuffer
-	{
+	private struct ActionBuffer {
 		public ActionStates? bufferedAction;
 		public double queueTimer;
-		public ActionBuffer()
-		{
+		public ActionBuffer() {
 			this.bufferedAction = null;
 			this.queueTimer = 0;
 		}
@@ -39,8 +36,7 @@ public partial class NewGorilla : CharacterBody3D
 	/// <summary>
 	/// Stores the animation data for the character.
 	/// </summary>
-	private enum Animations
-	{
+	private enum Animations {
 		Idle,
 		WalkF,
 		StrafeL,
@@ -51,9 +47,10 @@ public partial class NewGorilla : CharacterBody3D
 		AtkHigh1,
 		AtkLowSweep,
 		AtkOverhead,
-		AtkToss
+		AtkToss,
+		BackWalk
 	}
-	private string AnimPrefix = "rig_002|";
+	private string animPrefix = "rig_002|";
 	private AnimationPlayer anims;
 
 	private FbxChara player;
@@ -64,15 +61,15 @@ public partial class NewGorilla : CharacterBody3D
 	public double MaxRotationSpeed = 5;
 	[Export(PropertyHint.Range, "-10,10,0.1")]
 	public float movementSpeed = 5;
+	[Export(PropertyHint.Range, "-50,50,0.1")]
+	public float jumpVelocity = 5;
 	[Export(PropertyHint.Range, "0,5,0.1")]
 	public double ActionBufferTime = 1;
 
-	public void setPlayer(FbxChara p)
-	{
+	public void setPlayer(FbxChara p) {
 		player = p;
 	}
-	public override void _Ready()
-	{
+	public override void _Ready() {
 		actionState = ActionStates.Midair;
 		momentum = new Vector3(0, -1.5f, 0);
 		anims = (AnimationPlayer)GetNode("Model/AnimationPlayer");
@@ -80,111 +77,101 @@ public partial class NewGorilla : CharacterBody3D
 		anims.AnimationFinished += AnimEndEvent;
 	}
 
-	public override void _Process(double delta)
-	{
+	public override void _Process(double delta) {
 		movement = new Vector3(0, 0, 0);
 		//Handle input
 		HandleInput(delta);
 		//Handle signals
 		//Handle Physics
 		//      Should account for switching states depending on inputs
-		if (actionState == ActionStates.GStrafeL)
-		{
-			movement.X += movementSpeed * (float) delta * 100;
+		if (actionState == ActionStates.GStrafeL) {
+			movement.X += movementSpeed * (float)delta * 100;
 		}
-		if (actionState == ActionStates.GStrafeR)
-		{
-			movement.X -= movementSpeed * (float) delta * 100;
+		if (actionState == ActionStates.GStrafeR) {
+			movement.X -= movementSpeed * (float)delta * 100;
 		}
 		movement = movement.Rotated(new Vector3(0, 1, 0), Rotation.Y);
 		Velocity = momentum + movement * new Vector3(movementSpeed, movementSpeed, movementSpeed);
 		this.MoveAndSlide();
-		for (int i = 0; i < this.GetSlideCollisionCount(); i++)
-		{
-			if (((StaticBody3D)this.GetSlideCollision(i).GetCollider()).GetCollisionLayerValue(1))
-			{
+		for (int i = 0; i < this.GetSlideCollisionCount(); i++) {
+			if (((StaticBody3D)this.GetSlideCollision(i).GetCollider()).GetCollisionLayerValue(1)) {
 				BufferAction(ActionStates.Idle);
 			}
 		}
 
 		//Face the character if you can
-		if (actionState != ActionStates.Staggered && actionState != ActionStates.Stunned && actionState != ActionStates.Prone)
-		{
+		if (actionState != ActionStates.Staggered && actionState != ActionStates.Stunned && actionState != ActionStates.Prone) {
 			this.RotateY((float)CustAng.GetShortestAngle(this, player, MaxRotationSpeed, delta));
 		}
 		GD.Print(actionState);
 	}
-	private void HandleInput(double delta)
-	{
-		if (actionBuffer.bufferedAction != null)
-		{
+	private void HandleInput(double delta) {
+		if (actionBuffer.bufferedAction != null) {
 			actionBuffer.queueTimer -= delta;
-			if (actionBuffer.queueTimer <= 0)
-			{
+			if (actionBuffer.queueTimer <= 0) {
 				actionBuffer.bufferedAction = null;
 			}
 		}
+		if (!animationLocked) {
+			if (Input.IsActionPressed("GStrafeL")) {
+				BufferAction(ActionStates.GStrafeL);
+			}
+			if (Input.IsActionPressed("GStrafeR")) {
+				BufferAction(ActionStates.GStrafeR);
+			}
+			if (Input.IsActionJustPressed("JumpBack")) {
+				BufferAction(ActionStates.JumpBack);
+			}
+			if (Input.IsActionJustPressed("Roll")) {
+				BufferAction(ActionStates.JumpBack);
+			}
 
-		if (Input.IsActionPressed("GStrafeL"))
-		{
-			BufferAction(ActionStates.GStrafeL);
-		}
-		if (Input.IsActionPressed("GStrafeR"))
-		{
-			BufferAction(ActionStates.GStrafeR);
-		}
 
-		if (actionState == ActionStates.Midair)
-		{
-			if (actionBuffer.bufferedAction == ActionStates.Idle)
-			{
-				actionState = ActionStates.Idle;
-				actionBuffer.bufferedAction = null;
-				anims.Play(AnimPrefix + Animations.Idle);
+			if (actionState == ActionStates.Midair) {
+				if (actionBuffer.bufferedAction == ActionStates.Idle) {
+					actionState = ActionStates.Idle;
+					actionBuffer.bufferedAction = null;
+					anims.Play(animPrefix + Animations.Idle);
+				}
 			}
-		}
 
-		if (actionState == ActionStates.Idle)
-		{
-			if (actionBuffer.bufferedAction == ActionStates.GStrafeL)
-			{
-				actionState = ActionStates.GStrafeL;
-				anims.Play(AnimPrefix + Animations.StrafeL, -1, movementSpeed);
-				actionBuffer.bufferedAction = null;
-				return;
-			}
-			else if (actionBuffer.bufferedAction == ActionStates.GStrafeR)
-			{
-				actionState = ActionStates.GStrafeR;
-				anims.Play(AnimPrefix + Animations.StrafeR, -1, movementSpeed);
-				actionBuffer.bufferedAction = null;
-				return;
-			}
-			else if (Input.IsActionPressed("GWalk"))
-			{
-				//Handle walk. Walk if walk is pressed, regardless of start/stop.
-				//You would want to mess with velocity here.
-				movement.Z -= 100 * movementSpeed * (float)delta;
-				anims.Play(AnimPrefix + Animations.WalkF);
-			}
-			else if (Input.IsActionPressed("GWalkBack"))
-			{
-				//Handle walk. Walk if walk is pressed, regardless of start/stop.
-				//You would want to mess with velocity here.
-				movement.Z += 100 * movementSpeed * (float)delta;
-				anims.Play(AnimPrefix + Animations.WalkF);
-			}
-			else
-			{
-				anims.Play(AnimPrefix + Animations.Idle, 0.2);
+			if (actionState == ActionStates.Idle) {
+				if (actionBuffer.bufferedAction != null) {
+					actionState = actionBuffer.bufferedAction ?? actionState;
+					switch (actionState) {
+						case ActionStates.GStrafeL:
+							anims.Play(animPrefix + Animations.StrafeL, -1, movementSpeed);
+							break;
+						case ActionStates.GStrafeR:
+							anims.Play(animPrefix + Animations.StrafeR, -1, movementSpeed);
+							break;
+						case ActionStates.JumpBack:
+							anims.Play(animPrefix + Animations.JumpBackStart);
+							this.momentum.Y += jumpVelocity;
+							break;
+					}
+					actionBuffer.bufferedAction = null;
+					return;
+				} else if (Input.IsActionPressed("GWalk")) {
+					//Handle walk. Walk if walk is pressed, regardless of start/stop.
+					//You would want to mess with velocity here.
+					movement.Z -= 100 * movementSpeed * (float)delta;
+					anims.Play(animPrefix + Animations.WalkF);
+				} else if (Input.IsActionPressed("GWalkBack")) {
+					//Handle walk. Walk if walk is pressed, regardless of start/stop.
+					//You would want to mess with velocity here.
+					movement.Z += 100 * movementSpeed * (float)delta;
+					anims.Play(animPrefix + Animations.WalkF);
+				} else {
+					anims.Play(animPrefix + Animations.Idle, 0.2);
+				}
 			}
 		}
 	}
 	/// <summary>
 	/// Buffers an action for the character.
 	/// </summary>
-	private void BufferAction(ActionStates action)
-	{
+	private void BufferAction(ActionStates action) {
 		actionBuffer.bufferedAction = action;
 		actionBuffer.queueTimer = ActionBufferTime;
 	}
