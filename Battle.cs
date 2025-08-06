@@ -5,7 +5,7 @@ public partial class Battle : Node3D
 {
 	Control optionMenu;
 	FbxChara cha;
-	NewGorilla gor;
+	Entity gor;
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
@@ -13,10 +13,10 @@ public partial class Battle : Node3D
 		optionMenu = this.GetChild<Control>(-1);
 		optionMenu.Visible = false;
 
-		gor = GetNode<NewGorilla>("GorillaEnemy");
+		gor = GetNode<Entity>("GorillaEnemy");
 		cha = GetNode<FbxChara>("FBX");
 
-		gor.setPlayer(cha);
+		//gor.setPlayer(cha);
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.

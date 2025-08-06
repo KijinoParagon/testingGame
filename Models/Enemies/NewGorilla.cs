@@ -2,8 +2,16 @@ using Godot;
 using System;
 using Customs;
 using System.Reflection;
-
+/*
 public partial class NewGorilla : CharacterBody3D {
+	[Export(PropertyHint.Range, "0,10,0.1")]
+	public double MaxRotationSpeed = 5;
+	[Export(PropertyHint.Range, "-10,10,0.1")]
+	public float movementSpeed = 5;
+	[Export(PropertyHint.Range, "-50,50,0.1")]
+	public float jumpVelocity = 5;
+	[Export(PropertyHint.Range, "0,5,0.1")]
+	public double ActionBufferTime = 1;
 	/// <summary>
 	/// Action state determines what the character can do.
 	/// </summary>
@@ -19,20 +27,71 @@ public partial class NewGorilla : CharacterBody3D {
 		Stunned,
 		JumpBack
 	}
-	private ActionStates actionState;
+
 	private bool animationLocked = false;
 	/// <summary>
 	/// Struct for buffering actions.
 	/// </summary>
 	private struct ActionBuffer {
-		public ActionStates? bufferedAction;
-		public double queueTimer;
-		public ActionBuffer() {
-			this.bufferedAction = null;
-			this.queueTimer = 0;
+		private double queueTimer = 0;
+		private double currentActionTimer = 0;
+		private double actionBufferTime = 0;
+		private bool actionLocked = false;
+		public ActionStates? bufferedAction = null;
+		private ActionStates actionState = ActionStates.Idle;
+
+		void BufferAction(ActionStates action) {
+			this.bufferedAction = action;
+			this.queueTimer = this.actionBufferTime;
+		}
+		ActionStates GetAction() {
+			return this.actionState;
+		}
+		ActionStates UpdateAction(double delta) {
+			if (this.bufferedAction != null) {
+				this.queueTimer -= delta;
+				if (this.queueTimer <= 0) {
+					this.bufferedAction = null;
+				}
+			}
+			if (this.actionState == ActionStates.Idle) {
+				if (bufferedAction != null) {
+					actionState = bufferedAction ?? actionState;
+					switch (actionState) {
+						case ActionStates.GStrafeL:
+							anims.Play(animPrefix + Animations.StrafeL, -1, movementSpeed);
+							break;
+						case ActionStates.GStrafeR:
+							anims.Play(animPrefix + Animations.StrafeR, -1, movementSpeed);
+							break;
+						case ActionStates.JumpBack:
+							anims.Play(animPrefix + Animations.JumpBackStart);
+							this.momentum.Y += jumpVelocity;
+							break;
+					}
+					bufferedAction = null;
+					return this.actionState;
+				} else if (Input.IsActionPressed("GWalk")) {
+					//Handle walk. Walk if walk is pressed, regardless of start/stop.
+					//You would want to mess with velocity here.
+					movement.Z -= 100 * movementSpeed * (float)delta;
+					anims.Play(animPrefix + Animations.WalkF);
+				} else if (Input.IsActionPressed("GWalkBack")) {
+					//Handle walk. Walk if walk is pressed, regardless of start/stop.
+					//You would want to mess with velocity here.
+					movement.Z += 100 * movementSpeed * (float)delta;
+					anims.Play(animPrefix + Animations.WalkF);
+				} else {
+					anims.Play(animPrefix + Animations.Idle, 0.2);
+				}
+			}
+			return this.actionState;
+		}
+		public ActionBuffer(double time) {
+			this.actionBufferTime = time;
 		}
 	}
-	private ActionBuffer actionBuffer = new ActionBuffer();
+	private ActionBuffer actionBuffer;
 	/// <summary>
 	/// Stores the animation data for the character.
 	/// </summary>
@@ -57,20 +116,11 @@ public partial class NewGorilla : CharacterBody3D {
 	private Vector3 momentum;
 	private Vector3 movement;
 
-	[Export(PropertyHint.Range, "0,10,0.1")]
-	public double MaxRotationSpeed = 5;
-	[Export(PropertyHint.Range, "-10,10,0.1")]
-	public float movementSpeed = 5;
-	[Export(PropertyHint.Range, "-50,50,0.1")]
-	public float jumpVelocity = 5;
-	[Export(PropertyHint.Range, "0,5,0.1")]
-	public double ActionBufferTime = 1;
-
 	public void setPlayer(FbxChara p) {
 		player = p;
 	}
 	public override void _Ready() {
-		actionState = ActionStates.Midair;
+		actionBuffer = new ActionBuffer(this.ActionBufferTime);
 		momentum = new Vector3(0, -1.5f, 0);
 		anims = (AnimationPlayer)GetNode("Model/AnimationPlayer");
 		AnimationMixer.AnimationFinishedEventHandler AnimEndEvent = new AnimationMixer.AnimationFinishedEventHandler((Godot.StringName name) => { actionState = actionBuffer.bufferedAction ?? ActionStates.Idle; actionBuffer.bufferedAction = null; });
@@ -106,12 +156,7 @@ public partial class NewGorilla : CharacterBody3D {
 		GD.Print(actionState);
 	}
 	private void HandleInput(double delta) {
-		if (actionBuffer.bufferedAction != null) {
-			actionBuffer.queueTimer -= delta;
-			if (actionBuffer.queueTimer <= 0) {
-				actionBuffer.bufferedAction = null;
-			}
-		}
+
 		if (!animationLocked) {
 			if (Input.IsActionPressed("GStrafeL")) {
 				BufferAction(ActionStates.GStrafeL);
@@ -168,11 +213,4 @@ public partial class NewGorilla : CharacterBody3D {
 			}
 		}
 	}
-	/// <summary>
-	/// Buffers an action for the character.
-	/// </summary>
-	private void BufferAction(ActionStates action) {
-		actionBuffer.bufferedAction = action;
-		actionBuffer.queueTimer = ActionBufferTime;
-	}
-}
+}*/
