@@ -42,57 +42,49 @@ public partial class FbxChara : Node3D
 		Input.MouseMode = Input.MouseModeEnum.Captured;
 	}
 
+	public void MoveForward() {
+		velocity.Z = 1;
+	}
+
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
-	{
-		if (Input.IsActionJustReleased("Forward"))
-		{
+	public override void _Process(double delta) {
+		if (Input.IsActionJustReleased("Forward")) {
 			velocity.Z = 0;
 		}
-		if (Input.IsActionJustReleased("Back"))
-		{
+		if (Input.IsActionJustReleased("Back")) {
 			velocity.Z = 0;
 		}
-		if (Input.IsActionJustReleased("Left"))
-		{
+		if (Input.IsActionJustReleased("Left")) {
 			velocity.X = 0;
 		}
-		if (Input.IsActionJustReleased("Right"))
-		{
+		if (Input.IsActionJustReleased("Right")) {
 			velocity.X = 0;
 		}
-		if (!Input.IsActionPressed("Forward") && !Input.IsActionPressed("Back") && !Input.IsActionPressed("Left") && !Input.IsActionPressed("Right") && AnimationTimer == 0)
-		{
+		if (!Input.IsActionPressed("Forward") && !Input.IsActionPressed("Back") && !Input.IsActionPressed("Left") && !Input.IsActionPressed("Right") && AnimationTimer == 0) {
 			stateBuffer = States.Idle;
 		}
-		if (state == States.Idle || state == States.Move)
-		{
+		if (state == States.Idle || state == States.Move) {
 			anims.Play("rig|MidIdle");
 
 			var actions = InputMap.GetActions();
 
-			if (Input.IsActionJustPressed("Forward"))
-			{
+			if (Input.IsActionJustPressed("Forward")) {
 				velocity.Z += velocityScale;
 				stateBuffer = States.Move;
 			}
-			if (Input.IsActionJustPressed("Back"))
-			{
+			if (Input.IsActionJustPressed("Back")) {
 				velocity.Z -= velocityScale;
 				stateBuffer = States.Move;
 			}
-			if (Input.IsActionJustPressed("Left"))
-			{
+			if (Input.IsActionJustPressed("Left")) {
 				velocity.X += velocityScale;
 				stateBuffer = States.Move;
 			}
-			if (Input.IsActionJustPressed("Right"))
-			{
+			if (Input.IsActionJustPressed("Right")) {
 				velocity.X -= velocityScale;
 				stateBuffer = States.Move;
 			}
-			if (Input.IsActionJustPressed("Attack"))
-			{
+			if (Input.IsActionJustPressed("Attack")) {
 				anims.Stop();
 				anims.Play("rig|MidAtkL", customSpeed: atkSpeed);
 				stateBuffer = States.AtkL1;
@@ -103,11 +95,9 @@ public partial class FbxChara : Node3D
 		}
 
 
-		if (state == States.AtkL1)
-		{
+		if (state == States.AtkL1) {
 			anims.Play("rig|MidAtkL", customSpeed: atkSpeed);
-			if (Input.IsActionJustPressed("Attack"))
-			{
+			if (Input.IsActionJustPressed("Attack")) {
 
 				stateBuffer = States.AtkL2;
 				velocity.X = 0;
@@ -115,34 +105,29 @@ public partial class FbxChara : Node3D
 				AnimationTimer = 0;
 			}
 			AnimationTimer += (float)delta;
-			if (AnimationTimer >= 0.5833 / atkSpeed)
-			{
+			if (AnimationTimer >= 0.5833 / atkSpeed) {
 				stateBuffer ??= States.Idle;
 				anims.Stop();
 				AnimationTimer = 0;
 			}
 		}
-		if (state == States.AtkL2)
-		{
+		if (state == States.AtkL2) {
 			anims.Play("rig|MidAtkL2", customSpeed: atkSpeed);
-			if (Input.IsActionJustPressed("Attack"))
-			{
+			if (Input.IsActionJustPressed("Attack")) {
 				stateBuffer = States.AtkL1;
 				velocity.X = 0;
 				velocity.Z = 0;
 				AnimationTimer = 0;
 			}
 			AnimationTimer += (float)delta;
-			if (AnimationTimer >= 0.5833 / atkSpeed)
-			{
+			if (AnimationTimer >= 0.5833 / atkSpeed) {
 				stateBuffer ??= States.Idle;
 				anims.Stop();
 				AnimationTimer = 0;
 			}
 
 		}
-		if (AnimationTimer == 0)
-		{
+		if (AnimationTimer == 0) {
 			this.state = stateBuffer ?? States.Idle;
 			stateBuffer = null;
 		}

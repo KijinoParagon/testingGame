@@ -1,12 +1,34 @@
-[gd_scene load_steps=6 format=3 uid="uid://b4oltbh012i2t"]
+[gd_scene load_steps=9 format=3 uid="uid://b4oltbh012i2t"]
 
 [ext_resource type="PackedScene" uid="uid://cyq54icf8sfip" path="res://Models/Maps/map1.blend" id="1_b1bfn"]
-[ext_resource type="Script" path="res://Battle.cs" id="1_narl8"]
+[ext_resource type="Script" uid="uid://bh2hf18sra1nh" path="res://Battle.cs" id="1_narl8"]
 [ext_resource type="PackedScene" uid="uid://bjrxtv6opfy62" path="res://Models/Chara/FBXChara.tscn" id="1_y1mwj"]
 [ext_resource type="PackedScene" uid="uid://beu4d2k2ogwi6" path="res://Models/Enemies/GorillaEnemy.tscn" id="3_6naba"]
+[ext_resource type="Shader" uid="uid://dgdqmqyyf1axd" path="res://Water.gdshader" id="5_pjn1s"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2tieh"]
 size = Vector3(118.556, 1, 151.956)
+
+[sub_resource type="QuadMesh" id="QuadMesh_yflgj"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lrdw4"]
+render_priority = 0
+shader = ExtResource("5_pjn1s")
+shader_parameter/wave_speed = 0.1
+shader_parameter/wave_a = Vector4(1, 1, 0.35, 3)
+shader_parameter/wave_b = Vector4(1, 0.6, 0.3, 1.55)
+shader_parameter/wave_c = Vector4(1, 1.3, 0.25, 0.9)
+shader_parameter/sampler_scale = Vector2(0.25, 0.25)
+shader_parameter/sampler_direction = Vector2(0.05, 0.04)
+shader_parameter/uv_sampler_scale = Vector2(0.25, 0.25)
+shader_parameter/uv_sampler_strength = 0.04
+shader_parameter/foam_level = 0.5
+shader_parameter/refraction = 0.075
+shader_parameter/color_deep = Color(0, 0, 0.93333334, 0.5803922)
+shader_parameter/color_shallow = Color(0, 0.8627451, 0.79607844, 0.33333334)
+shader_parameter/beers_law = 2.0
+shader_parameter/depth_offset = -0.75
+shader_parameter/projector = Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
 
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_narl8")
@@ -14,7 +36,6 @@ script = ExtResource("1_narl8")
 [node name="FBX" parent="." instance=ExtResource("1_y1mwj")]
 
 [node name="map1" parent="." instance=ExtResource("1_b1bfn")]
-visible = false
 
 [node name="MapStaticBody" type="StaticBody3D" parent="map1"]
 
@@ -24,6 +45,7 @@ shape = SubResource("BoxShape3D_2tieh")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.23464, 5.41333)
+visible = false
 light_color = Color(0.772295, 0.167037, 0.73242, 1)
 light_energy = 8.83
 shadow_enabled = true
@@ -37,6 +59,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.33216, 4.82955)
 [node name="OmniLight3D2" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.08862, -7.12553)
 light_color = Color(0.632186, 0.618929, 0.610099, 1)
-light_energy = 4.185
+light_energy = 4.0
 shadow_enabled = true
 omni_range = 68.276
+
+[node name="Water" type="MeshInstance3D" parent="."]
+transform = Transform3D(90, 0, 0, 0, -3.934025e-06, 1, 0, -90, -4.371139e-08, 0, 0.9477434, 0)
+mesh = SubResource("QuadMesh_yflgj")
+surface_material_override/0 = SubResource("ShaderMaterial_lrdw4")
