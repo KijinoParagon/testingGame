@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://beu4d2k2ogwi6" path="res://Models/Enemies/GorillaEnemy.tscn" id="3_6naba"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2tieh"]
-size = Vector3(118.556, 1, 151.956)
+size = Vector3(118.556, 1, 150)
 
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_narl8")
